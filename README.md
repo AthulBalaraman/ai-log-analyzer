@@ -37,6 +37,53 @@ It not only analyzes logs but also **collaboratively plans, executes, and valida
 
 ---
 
+## 🔥 Streamlit Dashboard (NEW)
+
+The project now includes an interactive **Streamlit-based UI dashboard** for easy testing and visualization of the AI Security Log Analyzer.
+
+### Features:
+* **Interactive UI:** A modern dashboard for simulating real-world security events.
+* **Predefined Log Events:** 20+ realistic attack scenarios (SQLi, XSS, Brute Force, etc.) and normal logs.
+* **Multi-Select Execution:** Select multiple logs and analyze them in a single batch.
+* **Visual Insights:** 
+    * **Risk Levels:** Color-coded indicators (High/Medium/Low).
+    * **AI Analysis:** Detailed summaries and confidence scores for each log.
+    * **Actions Taken:** Real-time feedback on security actions performed by the agents.
+* **Overall Summary:** Quick metrics on total logs, average confidence, and overall risk.
+
+---
+
+## 🖥️ How to Run UI
+
+1. Ensure the FastAPI backend is running:
+```bash
+uvicorn app.main:app --reload
+```
+
+2. In a new terminal, run the Streamlit app:
+```bash
+streamlit run app/ui/streamlit_app.py
+```
+
+---
+
+## 🧪 Demo Flow
+
+1. **Select Logs:** Use the multi-select dropdown to pick one or more security logs.
+2. **Analyze:** Click the **"Analyze Logs"** button.
+3. **Review Results:** View the overall risk metrics and detailed AI analysis cards for each log.
+4. **Observe Actions:** See the list of automated actions taken by the AI agents (e.g., blocking IPs, alerting admins).
+
+---
+
+## 🎯 Why This Matters
+
+* **Demo-Ready:** Provides a visual way to showcase the power of the multi-agent AI system.
+* **Realistic Testing:** Easily simulate complex attack scenarios without manual API calls.
+* **SOC Visualization:** Mimics a simplified Security Operations Center (SOC) dashboard.
+
+---
+
 ## ⚙️ Tech Stack
 
 * Python 3.10+

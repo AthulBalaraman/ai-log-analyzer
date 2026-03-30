@@ -1,4 +1,4 @@
-You are a senior AI architect. Upgrade my existing FastAPI + LangChain + Gemini project (already using a single agent with tools) into a **Multi-Agent System**.
+You are a senior full-stack AI engineer. Extend my existing FastAPI + LangChain + Gemini project by building a **Streamlit-based UI dashboard** inside the same codebase.
 
 ---
 
@@ -6,306 +6,315 @@ You are a senior AI architect. Upgrade my existing FastAPI + LangChain + Gemini 
 
 Before writing ANY code:
 
-1. **Read `requirements.txt`**
-2. Use ONLY the versions specified
-3. Ensure all LangChain APIs used are compatible with those versions
-4. DO NOT use deprecated APIs
-5. Maintain compatibility with `langchain-google-genai`
+1. Read `requirements.txt`
+2. Use only compatible versions of:
+
+   * streamlit
+   * requests / httpx
+3. Do NOT upgrade existing dependencies unless necessary
+4. Ensure compatibility with current FastAPI backend
 
 ---
 
 # 🎯 GOAL
 
-Currently:
+Build a **Streamlit UI dashboard** that:
 
-* Single agent handles everything
+* Simulates **20+ real-world vulnerable log events**
+* Allows:
 
-Upgrade to:
-👉 **Multi-Agent Architecture with clear separation of responsibilities**
+  * Single click execution
+  * Multi-select execution
+* Sends logs to backend `/analyze` API
+* Displays:
+
+  * Raw log
+  * AI analysis
+  * Risk level
+  * Actions taken
 
 ---
 
-# 🧠 ARCHITECTURE DESIGN
+# 📂 FILE TO CREATE
 
-Implement 3 agents:
+```plaintext
+app/ui/streamlit_app.py
+```
 
 ---
 
-## 🔹 1. Planner Agent
+# 🧠 UI FEATURES
 
-**Responsibility:**
+---
 
-* Analyze batch results
-* Decide what needs to be done
-* Create structured plan
+## 🔹 1. Page Layout
 
-**Input:**
+Use Streamlit to create:
 
-* Logs
-* Analysis results
+* Title:
+  "🛡️ AI Security Log Analyzer Dashboard"
 
-**Output:**
+* Sections:
 
-```json id="planner_out"
+  1. Event Selection Panel
+  2. Action Button
+  3. Results Display
+
+---
+
+## 🔹 2. Predefined Log Events (IMPORTANT)
+
+Create at least **20 realistic logs**, including:
+
+### Authentication Attacks
+
+* Failed login multiple times from IP
+* Brute force attempt
+* Suspicious login location
+
+### Web Attacks
+
+* SQL injection attempt
+* XSS attack
+* API abuse
+
+### Network Attacks
+
+* High traffic spike from single IP
+* Port scanning detected
+
+### Normal Logs (for contrast)
+
+* Successful login
+* Normal API request
+
+Store them in a list like:
+
+```python
+logs = [
+    "Failed login attempts from IP 192.168.1.10",
+    "User attempted SQL injection using SELECT * FROM users",
+    ...
+]
+```
+
+---
+
+## 🔹 3. Multi-Select Input
+
+Use:
+
+```python
+st.multiselect()
+```
+
+Allow user to:
+
+* Select multiple logs
+* Quickly simulate multiple attacks
+
+---
+
+## 🔹 4. Execute Button
+
+Add:
+
+```python
+st.button("Analyze Logs")
+```
+
+On click:
+
+* Send selected logs to FastAPI backend
+
+---
+
+## 🔹 5. API Integration
+
+Call:
+
+```plaintext
+POST http://127.0.0.1:8000/analyze
+```
+
+Send:
+
+```json
 {
-  "tasks": [
-    {"action": "block_ip", "ip": "192.168.1.10"},
-    {"action": "alert_admin", "message": "..."}
-  ]
+  "logs": [...]
 }
 ```
 
----
-
-## 🔹 2. Executor Agent
-
-**Responsibility:**
-
-* Execute tasks using tools
-* Convert plan → real actions
-
-Uses:
-
-* block_ip
-* alert_admin
-* log_incident
+Use `requests` or `httpx`
 
 ---
 
-## 🔹 3. Supervisor Agent (Lightweight)
+## 🔹 6. Display Results (VERY IMPORTANT)
 
-**Responsibility:**
+For each log, show:
 
-* Validate results
-* Ensure no unnecessary actions
-* Optional refinement
+### 📦 Card Layout (per log)
+
+Display:
+
+#### 🧾 Raw Log
+
+#### 🧠 AI Analysis Summary
+
+#### ⚠️ Risk Level (color-coded)
+
+* High → Red
+* Medium → Yellow
+* Low → Green
+
+#### 🎯 Attack Type
+
+#### 📊 Confidence Score
 
 ---
 
-# 📂 FILE STRUCTURE
+## 🔹 7. Actions Taken Section
 
-Create:
+Display:
 
-```id="multi_agent_structure"
-app/
-├── agents/
-│   ├── planner_agent.py
-│   ├── executor_agent.py
-│   ├── supervisor_agent.py
-│   └── __init__.py
+```plaintext
+🚨 Actions Taken:
+- Blocked IP ...
+- Alert sent ...
+- Incident logged ...
 ```
 
 ---
 
-# ⚙️ IMPLEMENTATION DETAILS
+## 🔹 8. Overall Summary
+
+At top or bottom show:
+
+* Overall Risk
+* Average Confidence
+* Total Logs
 
 ---
 
-## 1. Planner Agent
+## 🔹 9. UI Enhancements (IMPORTANT)
 
-File: `planner_agent.py`
+Use:
 
-* Use LLM (Gemini)
-* No tools required
-* Output structured JSON plan
-
-Prompt should:
-
-* Act as cybersecurity planner
-* Decide:
-
-  * Which actions are needed
-  * Extract IPs if needed
-* Be strict about JSON output
+* `st.columns()` for layout
+* `st.container()` for grouping
+* `st.markdown()` with HTML for styling
+* Emojis for better UX
 
 ---
 
-## 2. Executor Agent
+## 🔹 10. Loading State
 
-File: `executor_agent.py`
+Add spinner:
 
-* Use LangChain tool-calling agent
-* Pass tools:
-
-  * block_ip
-  * alert_admin
-  * log_incident
-
-Input:
-
-* Planner output
-
-Output:
-
-* List of executed actions
-
----
-
-## 3. Supervisor Agent
-
-File: `supervisor_agent.py`
-
-* Simple LLM validation layer
-* Ensures:
-
-  * No duplicate actions
-  * No unnecessary blocking
-* Can modify or filter actions
-
----
-
-## 4. Modify Service Layer
-
-File: `app/services/ai_service.py`
-
----
-
-### Replace current agent logic with:
-
-Flow:
-
-```id="multi_agent_flow"
-Logs
- ↓
-LLM Analysis (existing)
- ↓
-Planner Agent → creates plan
- ↓
-Executor Agent → executes tools
- ↓
-Supervisor Agent → validates/refines
- ↓
-Final Response
+```python
+with st.spinner("Analyzing logs..."):
 ```
 
 ---
 
-## 5. Maintain Existing Features
+## 🔹 11. Error Handling
 
-DO NOT REMOVE:
+If API fails:
 
-* Parallel processing (asyncio)
-* Fault tolerance
-* Aggregation logic
+* Show error message
+* Do not crash UI
 
 ---
 
-## 6. Output Format
+# 🎨12. add these too
 
-Final response:
+* Add "Select All" button
+* Add "Clear Selection"
+* Add sidebar info panel
 
-```json id="final_out"
-{
-  "overall_risk": "...",
-  "average_confidence": ...,
-  "total_logs": ...,
-  "analysis": [...],
-  "plan": [...],
-  "actions_taken": [...]
-}
+---
+
+# 🔄 FLOW
+
+```plaintext
+User selects logs
+   ↓
+Clicks Analyze
+   ↓
+Streamlit calls FastAPI
+   ↓
+Backend processes (AI + agents)
+   ↓
+Response returned
+   ↓
+UI displays structured insights
 ```
-
----
-
-## 7. Error Handling
-
-* If planner fails → fallback to no actions
-* If executor fails → skip failed task
-* Ensure API never crashes
-
----
-
-## 8. Prompt Engineering (IMPORTANT)
-
-Each agent must have:
-
-* Clear role definition
-* Strict output format
-* Minimal hallucination
-
----
-
-## 9. Code Quality
-
-* Modular design
-* Clean separation of concerns
-* Async support where possible
 
 ---
 
 # 📘 README UPDATE (MANDATORY)
 
-Update README.md with:
+Update README.md:
 
 ---
 
-## 🔥 Multi-Agent AI System (NEW)
+## 🔥 Streamlit Dashboard (NEW)
 
 Explain:
 
-### Architecture:
+* Interactive UI for testing AI system
+* Simulates real-world attack scenarios
+* Helps visualize:
 
-* Planner Agent
-* Executor Agent
-* Supervisor Agent
-
-### Why Multi-Agent:
-
-* Better decision making
-* Separation of concerns
-* Scalable design
+  * AI decisions
+  * Risk levels
+  * Actions taken
 
 ---
 
-### Update Flow Diagram:
+## 🖥️ How to Run UI
 
-```id="readme_flow"
-Logs → Analysis → Planner → Executor → Supervisor → Response
+Add:
+
+```bash
+streamlit run app/ui/streamlit_app.py
 ```
 
 ---
 
-### Add Example:
+## 🧪 Demo Flow
 
-Show:
-
-* Input logs
-* Planner output
-* Final actions
+1. Select logs
+2. Click Analyze
+3. View results
 
 ---
 
-### Add Section:
-
-## 🧠 Why This Matters
+## 🎯 Why This Matters
 
 Explain:
 
-* Real-world AI systems use multi-agent
-* Similar to:
-
-  * CrewAI
-  * AutoGPT
-  * Enterprise AI systems
+* Demonstrates full-stack AI system
+* Makes project demo-ready
+* Simulates real SOC dashboard
 
 ---
 
-# 🚀 EXPECTED OUTCOME
+# 🚀 EXPECTED OUTPUT
 
-After implementation:
-
-* System uses multiple agents collaboratively
-* No single point of decision logic
-* Highly modular and scalable
-* Strong resume-level project
+* Fully working Streamlit UI
+* Integrated with FastAPI backend
+* Clean UX with structured results
+* Updated README
 
 ---
 
-# ⚠️ FINAL INSTRUCTION
+# ⚠️ FINAL NOTES
 
-* Use only compatible APIs from requirements.txt
-* Avoid deprecated LangChain patterns
-* Ensure everything runs without errors
+* Keep code modular
+* Do not break backend
+* Ensure UI runs independently
+* Maintain clean structure
 
 ---
 
@@ -313,7 +322,6 @@ After implementation:
 
 Return:
 
-* All new agent files
-* Updated service layer
+* Complete streamlit_app.py
 * Updated README
-* Working multi-agent system
+* Any required dependency updates
