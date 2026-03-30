@@ -1,0 +1,1 @@
+# We'll add structured JSON parsing here later
