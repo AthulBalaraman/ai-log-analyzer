@@ -1,36 +1,46 @@
-# 🛡️ AI Log Analyzer (Level 2 → Agentic AI System)
+# 🛡️ AI Log Analyzer (Multi-Agent AI System)
 
 ## 🚀 Overview
 
-This project is an **autonomous AI-powered log analysis and response system** built using:
+This project is an **autonomous Multi-Agent AI-powered log analysis and response system** built using:
 
 * LangChain (latest architecture)
 * Google Gemini (LLM)
 * FastAPI (backend)
-* **LangChain Agents (Dynamic Tool Calling)**
+* **Multi-Agent Orchestration (Planner, Executor, Supervisor)**
 
-It not only analyzes logs but also **dynamically decides and executes security actions** using an LLM-based agent.
+It not only analyzes logs but also **collaboratively plans, executes, and validates security actions** using multiple specialized AI agents.
 
 ---
 
-## 🧠 What’s New in This Upgrade
+## 🔥 Multi-Agent AI System (NEW)
 
-### 🔥 Agentic AI System (Major Upgrade)
+### Architecture:
 
-Previously:
-* System used **rule-based logic (if-else)** to take actions.
+1.  **Planner Agent:** Analyzes the batch analysis results and creates a structured action plan in JSON format. It decides which IPs to block and what alerts to send.
+2.  **Executor Agent:** A tool-calling agent that takes the plan and executes the necessary tools (`block_ip`, `alert_admin`, `log_incident`).
+3.  **Supervisor Agent:** A lightweight validation layer that reviews the analysis and the actions taken to ensure they are appropriate and provides a final polished assessment.
 
-Now:
-* System uses a **True Agentic Architecture**.
-* The LLM **dynamically decides** which tools to call and when.
-* Implements **autonomous decision-making** based on security context.
+### Why Multi-Agent:
+
+*   **Better Decision Making:** Specialized agents focus on specific tasks (planning vs. execution), leading to more reliable outcomes.
+*   **Separation of Concerns:** Each agent has a clear role, making the system easier to debug and extend.
+*   **Scalable Design:** New agents or tools can be added without bloating a single agent's logic.
+
+---
+
+## 🧠 Why This Matters
+
+*   **Real-world AI systems** are moving towards multi-agent architectures to handle complex workflows.
+*   Similar to frameworks like **CrewAI**, **AutoGPT**, and **Enterprise AI systems**, this project demonstrates how multiple LLM instances can collaborate to solve a problem.
+*   It provides a robust foundation for building autonomous security operations centers (SOCs).
 
 ---
 
 ## ⚙️ Tech Stack
 
 * Python 3.10+
-* LangChain (v0.3+)
+* LangChain (v1.2+ as per requirements)
 * langchain-google-genai
 * FastAPI
 * Pydantic
@@ -51,8 +61,12 @@ ai-log-analyzer/
 │   ├── api/
 │   │   └── routes/
 │   │       └── analyze.py
-│   ├── agents/                # NEW: Agent Logic
-│   │   └── security_agent.py
+│   ├── agents/                # UPDATED: Multi-Agent Logic
+│   │   ├── __init__.py
+│   │   ├── planner_agent.py
+│   │   ├── executor_agent.py
+│   │   ├── supervisor_agent.py
+│   │   └── security_agent.py  # Legacy single agent
 │   ├── services/
 │   │   └── ai_service.py
 │   ├── prompts/
@@ -75,55 +89,16 @@ ai-log-analyzer/
 ## 🔄 Application Flow
 
 ```text
-Client Request (Multiple Logs)
-   ↓
-FastAPI Route (/analyze)
-   ↓
-Parallel Analysis (asyncio)
-   ↓
-LLM Log Classification (Structured Output)
-   ↓
-Risk Aggregation
-   ↓
-🚀 LLM Agent (security_agent)
-   ↓
-Dynamic Tool Selection (Decision Layer)
-   ↓
-Execution (block_ip, alert_admin, log_incident)
-   ↓
-Final Response (Analysis + Agent Summary)
+Logs → Analysis → Planner → Executor → Supervisor → Response
 ```
 
----
-
-## 🧠 How It Works
-
-### 1. Input (Batch Logs)
-The system accepts a list of raw log strings via a POST request.
-
-### 2. Parallel AI Analysis
-Each log is analyzed concurrently to identify the log type, attack pattern, and risk level using a structured Pydantic parser.
-
-### 3. 🔥 Agentic Decision Layer (NEW)
-Instead of hardcoded rules, the system now passes the analysis results to a **LangChain Agent**.
-
-The agent is equipped with:
-* **Tools:** `block_ip`, `alert_admin`, `log_incident`.
-* **System Prompt:** Instructs the agent to act as a cybersecurity expert.
-* **Reasoning:** The agent analyzes the risk level and context to decide the best course of action.
-
-### 4. Dynamic Execution
-The agent calls the necessary tools. For example:
-* If a **Brute Force** attack is detected, the agent autonomously decides to call `block_ip`, `alert_admin`, and `log_incident`.
-* If it's a **Low Risk** event, it might only call `log_incident`.
-
----
-
-## 🛠️ Tools (Agent Capabilities)
-
-* **block_ip(ip)** → Blocks malicious IP addresses.
-* **alert_admin(message)** → Sends critical alerts to administrators.
-* **log_incident(details)** → Records security events for auditing.
+Detailed Flow:
+1.  **Logs** are received via FastAPI.
+2.  **LLM Analysis** classifies each log in parallel.
+3.  **Planner Agent** creates a JSON plan of action.
+4.  **Executor Agent** calls tools based on the plan.
+5.  **Supervisor Agent** validates the results and provides a final summary.
+6.  **Final Response** is returned to the client.
 
 ---
 
@@ -134,23 +109,50 @@ The agent calls the necessary tools. For example:
 {
   "logs": [
     "Failed login attempts from IP 192.168.1.10",
-    "Normal API request from user admin"
+    "SQL injection attempt detected on /api/users"
   ]
 }
 ```
 
-### Response:
+### Planner Output (Internal):
 ```json
 {
-  "overall_risk": "High",
-  "average_confidence": 92.0,
-  "total_logs": 2,
-  "analysis": [...],
-  "actions_taken": [
-    "I have analyzed the logs. The IP 192.168.1.10 was identified in a brute force attack and has been blocked. I have also alerted the administrator and logged the incident for auditing. The second log was a normal request and only required logging."
+  "tasks": [
+    {"action": "block_ip", "ip": "192.168.1.10"},
+    {"action": "alert_admin", "message": "Multiple high-risk attacks detected: Brute Force and SQL Injection."},
+    {"action": "log_incident", "details": "Blocked IP 192.168.1.10 and alerted admin regarding SQLi."}
   ]
 }
 ```
+
+### Final Response:
+```json
+{
+  "overall_risk": "High",
+  "average_confidence": 95.0,
+  "total_logs": 2,
+  "analysis": [...],
+  "plan": [
+    {"action": "block_ip", "ip": "192.168.1.10"},
+    {"action": "alert_admin", "message": "..."},
+    {"action": "log_incident", "details": "..."}
+  ],
+  "actions_taken": [
+    "Blocked IP 192.168.1.10",
+    "Admin alerted: Multiple high-risk attacks detected...",
+    "Incident logged: ...",
+    "Supervisor Assessment: The security response was appropriate. Both threats were neutralized and documented."
+  ]
+}
+```
+
+---
+
+## 🛠️ Tools (Agent Capabilities)
+
+* **block_ip(ip)** → Blocks malicious IP addresses.
+* **alert_admin(message)** → Sends critical alerts to administrators.
+* **log_incident(details)** → Records security events for auditing.
 
 ---
 
@@ -181,9 +183,9 @@ uvicorn app.main:app --reload
 
 ## 📌 Key Features
 
-### ✅ Autonomous Agent
-* No more hardcoded if-else logic for security responses.
-* LLM-driven tool selection and execution.
+### ✅ Multi-Agent Orchestration
+* Planner, Executor, and Supervisor working together.
+* Structured JSON communication between agents.
 
 ### ✅ Parallel Execution
 * Fast processing of log batches using `asyncio`.
@@ -197,6 +199,6 @@ uvicorn app.main:app --reload
 ---
 
 ## 💡 Author Notes
-This upgrade transforms the system from a passive analyzer into an active **Agentic Security Orchestrator**.
+This upgrade transforms the system into a sophisticated **Multi-Agent Security Orchestrator**, mimicking real-world enterprise AI workflows.
 
 ---

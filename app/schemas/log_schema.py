@@ -18,4 +18,5 @@ class BatchLogResponse(BaseModel):
     average_confidence: float
     total_logs: int
     analysis: List[LogResponse]
-    actions_taken: List[str]
+    plan: List[dict] = []
+    actions_taken: List[str] = []
