@@ -1,9 +1,9 @@
 import asyncio
+import json
 from langchain_google_genai import ChatGoogleGenerativeAI
 from app.prompts.log_prompt import log_prompt, parser
 from app.schemas.log_schema import BatchLogResponse, LogResponse
-from app.tools.security_tools import block_ip, alert_admin, log_incident
-from app.utils.ip_extractor import extract_ip
+from app.agents.security_agent import run_security_agent
 
 # 🔹 Initialize LLM
 llm = ChatGoogleGenerativeAI(
@@ -53,42 +53,22 @@ async def analyze_logs_batch(logs: list[str]) -> BatchLogResponse:
         overall_risk = "Medium"
     else:
         overall_risk = "Low"
-    actions_taken = await take_actions(results, logs)
+
+    # 🔥 Prepare input for the Agent
+    agent_input = {
+        "analysis": [r.model_dump() for r in results],
+        "original_logs": logs
+    }
+    
+    # 🔥 Run Agent
+    agent_output = await run_security_agent(json.dumps(agent_input))
+
     return BatchLogResponse(
         overall_risk=overall_risk,
         average_confidence=avg_confidence,
         total_logs=total,
         analysis=results,
-        actions_taken=actions_taken
+        actions_taken=[agent_output]
     )
-
-async def take_actions(results, logs):
-    actions = []
-
-    for result, log in zip(results, logs):
-        ip = extract_ip(log)
-
-        # 🔴 HIGH RISK → Full action
-        if result.risk_level == "High":
-            actions.extend([
-                block_ip.invoke({"ip": ip}),
-                alert_admin.invoke({"message": result.summary}),
-                log_incident.invoke({"details": result.suspicious_activity})
-            ])
-
-        # 🟡 MEDIUM RISK → Alert + Log
-        elif result.risk_level == "Medium":
-            actions.extend([
-                alert_admin.invoke({"message": result.summary}),
-                log_incident.invoke({"details": result.suspicious_activity})
-            ])
-
-        # 🟢 LOW RISK → Only log
-        else:
-            actions.append(
-                log_incident.invoke({"details": result.suspicious_activity})
-            )
-
-    return actions
 
    
