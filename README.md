@@ -1,4 +1,4 @@
-# 🛡️ AI Log Analyzer (Level 1 → Structured Output)
+# 🛡️ AI Log Analyzer (Level 1 → Log Intelligence Upgrade)
 
 ## 🚀 Overview
 
@@ -14,26 +14,33 @@ It analyzes system logs and returns:
 * Suspicious activity detection
 * Risk level classification
 * Suggested actions
+* **Log type classification (NEW)**
+* **Attack detection (NEW)**
+* **Confidence scoring (NEW)**
 
 ---
 
 ## 🧠 What’s New in This Branch
 
-### ✅ Structured Output Parsing (Major Upgrade)
+### 🔥 Intelligent Log Analysis (Major Upgrade)
 
-Previously, the model returned **raw text or inconsistent JSON**.
+Previously:
+
+* Generic log analysis
+* No understanding of log context
 
 Now:
 
-* Enforced **strict JSON output**
-* Used **Pydantic schema validation**
-* Integrated **LangChain Output Parser**
+* Detects **log type** (authentication, API, database, etc.)
+* Identifies **attack type** (brute force, SQL injection, etc.)
+* Assigns **confidence score (0–100)**
+* Produces **more accurate and contextual insights**
 
 👉 Result:
 
-* Reliable API responses
-* No broken JSON
-* Production-ready AI output
+* Smarter AI reasoning
+* Closer to real-world SOC systems
+* Stronger resume impact
 
 ---
 
@@ -50,7 +57,7 @@ Now:
 
 ## 🏗️ Project Structure
 
-```
+```id="v5y6j2"
 ai-log-analyzer/
 │
 ├── app/
@@ -78,14 +85,14 @@ ai-log-analyzer/
 
 ## 🔄 Application Flow
 
-```
+```id="t8t6hz"
 Client Request
    ↓
 FastAPI Route (/analyze)
    ↓
 Service Layer (LangChain)
    ↓
-Prompt Template
+Prompt Template (with classification rules)
    ↓
 Gemini LLM
    ↓
@@ -100,50 +107,66 @@ Structured JSON Response
 
 ### 1. Input
 
-User sends logs via POST request:
+User sends logs:
 
-```json
+```json id="slqz3s"
 {
-  "logs": "Multiple failed login attempts from IP 45.33.21.1"
+  "logs": "User failed login 15 times in 20 seconds from IP 192.168.1.10"
 }
 ```
 
 ---
 
-### 2. Prompt Processing
+### 2. Prompt Intelligence (NEW)
 
-LangChain formats input using:
+The system now:
 
-* ChatPromptTemplate
-* Dynamic format instructions from parser
+* Classifies log type:
+
+  * authentication
+  * api
+  * database
+  * network
+  * system
+
+* Detects attack types:
+
+  * brute_force
+  * sql_injection
+  * ddos
+  * none
+  * unknown
 
 ---
 
 ### 3. LLM Analysis
 
-Gemini analyzes:
+Gemini performs:
 
-* Patterns
-* Security risks
-* Suspicious behavior
+* Pattern recognition
+* Threat detection
+* Context-aware reasoning
 
 ---
 
-### 4. Output Parsing (NEW)
+### 4. Structured Output (from previous step)
 
-* Response is passed through **PydanticOutputParser**
-* Ensures strict schema validation
+* Enforced using PydanticOutputParser
+* Guarantees valid JSON
 
 ---
 
 ### 5. Final Response
 
-```json
+```json id="k7o3lu"
 {
+  "log_type": "authentication",
+  "attack_type": "brute_force",
   "summary": "Multiple failed login attempts detected",
-  "suspicious_activity": "Possible brute force attack",
+  "suspicious_activity": "Repeated login failures indicating brute force attack",
   "risk_level": "High",
-  "suggested_action": "Block IP and enable rate limiting"
+  "confidence_score": 92,
+  "suggested_action": "Block IP and enable account lockout policy"
 }
 ```
 
@@ -153,7 +176,7 @@ Gemini analyzes:
 
 ### 1. Create virtual environment
 
-```bash
+```bash id="98p4uz"
 python -m venv venv
 source venv/bin/activate   # Windows: venv\Scripts\activate
 ```
@@ -162,7 +185,7 @@ source venv/bin/activate   # Windows: venv\Scripts\activate
 
 ### 2. Install dependencies
 
-```bash
+```bash id="fwgsh2"
 pip install -r requirements.txt
 ```
 
@@ -170,9 +193,7 @@ pip install -r requirements.txt
 
 ### 3. Add environment variables
 
-Create `.env` file:
-
-```
+```env id="3khtb5"
 GOOGLE_API_KEY=your_api_key_here
 ```
 
@@ -180,7 +201,7 @@ GOOGLE_API_KEY=your_api_key_here
 
 ### 4. Run the application
 
-```bash
+```bash id="2lflpz"
 uvicorn app.main:app --reload
 ```
 
@@ -190,52 +211,87 @@ uvicorn app.main:app --reload
 
 Open:
 
-```
+```id="5j9q9s"
 http://127.0.0.1:8000/docs
 ```
-
-Use `/analyze` endpoint (POST)
 
 ---
 
 ## 🧪 Example Request
 
-```json
+```json id="9l6u8y"
 {
-  "logs": "User attempted login 10 times within 5 seconds from IP 192.168.1.1"
+  "logs": "POST /login failed 10 times from IP 45.33.21.1"
 }
 ```
 
 ---
 
+## 📌 Key Features
+
+### ✅ Context-Aware Analysis (NEW)
+
+* Understands log type
+* Applies domain-specific reasoning
+
+### ✅ Attack Detection (NEW)
+
+* Identifies common attack patterns
+* Maps logs to known threats
+
+### ✅ Confidence Scoring (NEW)
+
+* Adds reliability indicator to predictions
+
+### ✅ Structured Output
+
+* Clean JSON responses
+* API-ready format
+
+---
+
 ## 📌 Key Learning Outcomes
 
-* LangChain latest architecture (`prompt | llm | parser`)
-* Structured output using Pydantic
-* Reliable LLM responses
-* FastAPI integration with AI services
+* Prompt engineering with classification rules
+* Context-aware AI systems
+* Structured output enforcement using Pydantic
+* LangChain pipeline (`prompt | llm | parser`)
+* Designing intelligent AI services
 
 ---
 
 ## ⚠️ Challenges Solved
 
-* ❌ Inconsistent LLM output
-* ❌ Broken JSON responses
-* ❌ Manual parsing issues
+* ❌ Generic AI responses
+* ❌ No context awareness
+* ❌ Weak reasoning
 
-✔️ Solved using structured output parsing
+✔️ Solved using:
+
+* Prompt design improvements
+* Controlled output schema
+* Explicit classification rules
 
 ---
 
+## 🚀 Next Improvements
+
+* Batch log processing (multiple logs at once)
+* Risk scoring system (aggregated threat scoring)
+* Multi-agent architecture
+* Tool calling (auto-block IP simulation)
+* Vector DB memory (RAG)
+
+---
 
 ## 💡 Author Notes
 
-This project is being built incrementally with:
+This project is being developed incrementally with:
 
 * Clean architecture
-* Version-controlled feature branches
-* Production-ready practices
+* Feature-based branching
+* Production-level AI practices
 
-Each branch represents a **learning milestone in Agentic AI Development**
+Each branch represents a **step toward building an autonomous AI security system**
 
 ---
