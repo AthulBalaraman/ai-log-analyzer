@@ -1,4 +1,4 @@
-# 🛡️ AI Log Analyzer (Level 1 → Log Intelligence Upgrade)
+# 🛡️ AI Log Analyzer (Level 1 → Batch Processing + Parallel Execution)
 
 ## 🚀 Overview
 
@@ -8,39 +8,39 @@ This project is an **AI-powered log analysis system** built using:
 * Google Gemini (LLM)
 * FastAPI (backend)
 
-It analyzes system logs and returns:
+It analyzes system logs and provides:
 
-* Summary of events
-* Suspicious activity detection
-* Risk level classification
-* Suggested actions
-* **Log type classification (NEW)**
-* **Attack detection (NEW)**
-* **Confidence scoring (NEW)**
+* Context-aware log classification
+* Attack detection
+* Risk level assessment
+* Suggested mitigation actions
+* **Batch log processing (NEW)**
+* **Parallel execution (NEW)**
+* **Aggregated system risk scoring (NEW)**
 
 ---
 
 ## 🧠 What’s New in This Branch
 
-### 🔥 Intelligent Log Analysis (Major Upgrade)
+### 🔥 Batch Processing + Parallel Execution
 
 Previously:
 
-* Generic log analysis
-* No understanding of log context
+* Only single log analysis
+* Sequential processing (slow)
 
 Now:
 
-* Detects **log type** (authentication, API, database, etc.)
-* Identifies **attack type** (brute force, SQL injection, etc.)
-* Assigns **confidence score (0–100)**
-* Produces **more accurate and contextual insights**
+* Accepts **multiple logs in one request**
+* Processes logs **concurrently using asyncio**
+* Computes **overall system risk**
+* Handles failures gracefully (fault tolerance)
 
 👉 Result:
 
-* Smarter AI reasoning
-* Closer to real-world SOC systems
-* Stronger resume impact
+* Faster processing ⚡
+* Scalable architecture 🚀
+* Real-world SOC simulation 🛡️
 
 ---
 
@@ -51,13 +51,14 @@ Now:
 * langchain-google-genai
 * FastAPI
 * Pydantic
+* asyncio (parallel execution)
 * Uvicorn
 
 ---
 
 ## 🏗️ Project Structure
 
-```id="v5y6j2"
+```id="0d3b9n"
 ai-log-analyzer/
 │
 ├── app/
@@ -85,88 +86,108 @@ ai-log-analyzer/
 
 ## 🔄 Application Flow
 
-```id="t8t6hz"
-Client Request
+```id="9hps7y"
+Client Request (Multiple Logs)
    ↓
 FastAPI Route (/analyze)
    ↓
-Service Layer (LangChain)
+Service Layer
    ↓
-Prompt Template (with classification rules)
+Parallel Execution (asyncio.gather)
    ↓
-Gemini LLM
+LangChain Pipeline (prompt → LLM → parser)
    ↓
-Pydantic Output Parser
+Individual Log Analysis
    ↓
-Structured JSON Response
+Aggregation Logic
+   ↓
+Final Structured Response
 ```
 
 ---
 
 ## 🧠 How It Works
 
-### 1. Input
+### 1. Input (NEW - Batch Support)
 
-User sends logs:
+User sends multiple logs:
 
-```json id="slqz3s"
+```json id="o6u4qz"
 {
-  "logs": "User failed login 15 times in 20 seconds from IP 192.168.1.10"
+  "logs": [
+    "Failed login attempt from IP 192.168.1.1",
+    "User attempted SQL injection using SELECT * FROM users",
+    "High traffic spike from single IP"
+  ]
 }
 ```
 
 ---
 
-### 2. Prompt Intelligence (NEW)
+### 2. Parallel Processing (NEW)
 
-The system now:
-
-* Classifies log type:
-
-  * authentication
-  * api
-  * database
-  * network
-  * system
-
-* Detects attack types:
-
-  * brute_force
-  * sql_injection
-  * ddos
-  * none
-  * unknown
+* Each log is processed **independently**
+* Uses `asyncio.gather()` for concurrency
+* Reduces response time significantly
 
 ---
 
-### 3. LLM Analysis
+### 3. Individual Log Analysis
 
-Gemini performs:
+For each log:
 
-* Pattern recognition
-* Threat detection
-* Context-aware reasoning
-
----
-
-### 4. Structured Output (from previous step)
-
-* Enforced using PydanticOutputParser
-* Guarantees valid JSON
+* Detects log type (authentication, database, etc.)
+* Identifies attack type (brute force, SQL injection, etc.)
+* Assigns confidence score
 
 ---
 
-### 5. Final Response
+### 4. Fault Tolerance (NEW)
 
-```json id="k7o3lu"
+* If one log fails:
+
+  * System continues processing others
+  * Returns fallback response instead of crashing
+
+---
+
+### 5. Aggregation Logic (NEW)
+
+System computes:
+
+* Total logs analyzed
+* Average confidence score
+* Overall system risk
+
+---
+
+### 6. Final Response
+
+```json id="qk9k1y"
 {
-  "log_type": "authentication",
-  "attack_type": "brute_force",
-  "summary": "Multiple failed login attempts detected",
-  "suspicious_activity": "Repeated login failures indicating brute force attack",
-  "risk_level": "High",
-  "confidence_score": 92,
-  "suggested_action": "Block IP and enable account lockout policy"
+  "overall_risk": "High",
+  "average_confidence": 88.3,
+  "total_logs": 3,
+  "analysis": [
+    {
+      "log_type": "authentication",
+      "attack_type": "brute_force",
+      "summary": "Multiple failed login attempts detected",
+      "suspicious_activity": "Repeated login failures",
+      "risk_level": "High",
+      "confidence_score": 92,
+      "suggested_action": "Block IP and enable rate limiting"
+    },
+    {
+      "log_type": "database",
+      "attack_type": "sql_injection",
+      "summary": "SQL query manipulation detected",
+      "suspicious_activity": "Injection pattern found",
+      "risk_level": "High",
+      "confidence_score": 90,
+      "suggested_action": "Sanitize inputs and monitor queries"
+    }
+  ]
 }
 ```
 
@@ -176,7 +197,7 @@ Gemini performs:
 
 ### 1. Create virtual environment
 
-```bash id="98p4uz"
+```bash id="zq3c0s"
 python -m venv venv
 source venv/bin/activate   # Windows: venv\Scripts\activate
 ```
@@ -185,7 +206,7 @@ source venv/bin/activate   # Windows: venv\Scripts\activate
 
 ### 2. Install dependencies
 
-```bash id="fwgsh2"
+```bash id="7oxhbm"
 pip install -r requirements.txt
 ```
 
@@ -193,7 +214,7 @@ pip install -r requirements.txt
 
 ### 3. Add environment variables
 
-```env id="3khtb5"
+```env id="xz82lu"
 GOOGLE_API_KEY=your_api_key_here
 ```
 
@@ -201,7 +222,7 @@ GOOGLE_API_KEY=your_api_key_here
 
 ### 4. Run the application
 
-```bash id="2lflpz"
+```bash id="3smw9p"
 uvicorn app.main:app --reload
 ```
 
@@ -211,87 +232,83 @@ uvicorn app.main:app --reload
 
 Open:
 
-```id="5j9q9s"
+```id="n8o1v1"
 http://127.0.0.1:8000/docs
 ```
 
----
-
-## 🧪 Example Request
-
-```json id="9l6u8y"
-{
-  "logs": "POST /login failed 10 times from IP 45.33.21.1"
-}
-```
+Use `/analyze` endpoint (POST)
 
 ---
 
 ## 📌 Key Features
 
-### ✅ Context-Aware Analysis (NEW)
+### ✅ Batch Log Processing (NEW)
 
-* Understands log type
-* Applies domain-specific reasoning
+* Accepts multiple logs in a single request
 
-### ✅ Attack Detection (NEW)
+### ✅ Parallel Execution (NEW)
 
-* Identifies common attack patterns
-* Maps logs to known threats
+* Faster processing using asyncio
 
-### ✅ Confidence Scoring (NEW)
+### ✅ Fault Tolerance (NEW)
 
-* Adds reliability indicator to predictions
+* Prevents system failure due to single log error
+
+### ✅ Aggregated Risk Scoring (NEW)
+
+* Provides system-level threat assessment
+
+### ✅ Context-Aware AI Analysis
+
+* Log classification + attack detection
 
 ### ✅ Structured Output
 
-* Clean JSON responses
-* API-ready format
+* Reliable JSON responses
 
 ---
 
 ## 📌 Key Learning Outcomes
 
-* Prompt engineering with classification rules
-* Context-aware AI systems
-* Structured output enforcement using Pydantic
-* LangChain pipeline (`prompt | llm | parser`)
-* Designing intelligent AI services
+* Async programming with asyncio
+* Parallel execution design
+* Fault-tolerant system design
+* Aggregation logic for AI systems
+* Advanced LangChain pipeline usage
 
 ---
 
 ## ⚠️ Challenges Solved
 
-* ❌ Generic AI responses
-* ❌ No context awareness
-* ❌ Weak reasoning
+* ❌ Slow sequential processing
+* ❌ Single point of failure
+* ❌ No system-level insight
 
 ✔️ Solved using:
 
-* Prompt design improvements
-* Controlled output schema
-* Explicit classification rules
+* Parallel execution
+* Error handling
+* Aggregated scoring
 
 ---
 
 ## 🚀 Next Improvements
 
-* Batch log processing (multiple logs at once)
-* Risk scoring system (aggregated threat scoring)
+* Tool calling (AI takes actions like blocking IP)
 * Multi-agent architecture
-* Tool calling (auto-block IP simulation)
-* Vector DB memory (RAG)
+* Vector database (RAG memory)
+* Real-time log streaming (WebSockets)
 
 ---
 
 ## 💡 Author Notes
 
-This project is being developed incrementally with:
+This project is being built incrementally with:
 
 * Clean architecture
 * Feature-based branching
-* Production-level AI practices
+* Production-grade AI practices
 
-Each branch represents a **step toward building an autonomous AI security system**
+Each branch represents a **milestone toward building an autonomous AI security system**
 
 ---
