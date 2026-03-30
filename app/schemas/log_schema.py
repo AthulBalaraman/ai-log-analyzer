@@ -11,10 +11,11 @@ class LogResponse(BaseModel):
     suspicious_activity: str
     risk_level: str
     confidence_score: int = Field(..., ge=0, le=100)
-    suggested_action: str
+    suggested_action: str    
 
 class BatchLogResponse(BaseModel):
     overall_risk: str
     average_confidence: float
     total_logs: int
     analysis: List[LogResponse]
+    actions_taken: List[str]
